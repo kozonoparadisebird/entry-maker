@@ -130,9 +130,9 @@ baseImage.onload = () => {
   const displayW = rect.width;
   const displayH = rect.height;
 
-  // ズレ補正（あなたの感覚に合わせた最適値）
-  const scaleX = (displayW / IMG_W) * 1.006;
-  const scaleY = (displayH / IMG_H) * 1.006;
+  // ★ ズレ補正：1.01倍（あなたの感覚に合わせた最適値）
+  const scaleX = (displayW / IMG_W) * 1.01;
+  const scaleY = (displayH / IMG_H) * 1.01;
 
   areas.forEach(a => {
     const left = a.x * scaleX;
@@ -140,7 +140,7 @@ baseImage.onload = () => {
     const w    = a.w * scaleX;
     const h    = a.h * scaleY;
 
-    // 最大文字数を自動計算
+    // ★ 最大文字数を自動計算
     const usableH = h - (12 * scaleY * 2);
     const usableW = w - (12 * scaleX * 2);
     const fontSize = 22 * scaleX;
@@ -183,7 +183,7 @@ baseImage.onload = () => {
   });
 };
 
-// 入力ブロック
+// ★ 入力ブロック
 document.getElementById("editText").addEventListener("input", function() {
   const max = maxCharsMap[currentId];
   if (this.value.length > max) {
