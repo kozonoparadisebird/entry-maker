@@ -130,9 +130,9 @@ baseImage.onload = () => {
   const displayW = rect.width;
   const displayH = rect.height;
 
-  // ★ ズレ補正：1.01倍（あなたの感覚に合わせた最適値）
-  const scaleX = (displayW / IMG_W) * 1.01;
-  const scaleY = (displayH / IMG_H) * 1.01;
+  // ★ ズレ補正：1.1倍（あなたの指示）
+  const scaleX = (displayW / IMG_W) * 1.1;
+  const scaleY = (displayH / IMG_H) * 1.1;
 
   areas.forEach(a => {
     const left = a.x * scaleX;
