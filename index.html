@@ -1,217 +1,237 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>エントリーメーカー</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10の視点 - 心の備蓄入力ツール</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        /* 操作ボタンのエリア */
+        .control-panel {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn:hover {
+            background-color: #357ae8;
+        }
+        .btn-print {
+            background-color: #34a853;
+        }
+        .btn-print:hover {
+            background-color: #2b8c44;
+        }
 
-<style>
-body {
-  margin: 0;
-  background: #f5f5f5;
-  font-family: "M PLUS Rounded 1c", sans-serif;
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-  gap: 20px;
-}
+        /* アプリのメインコンテナ（A4比率） */
+        #canvas-container {
+            position: relative;
+            width: 794px;  /* A4の標準的なピクセル幅 */
+            height: 1123px; /* A4の標準的なピクセル高 */
+            background-color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
 
-/* 左側：画像エリア */
-#leftArea {
-  position: relative;
-  width: 60%;
-  max-width: 700px;
-}
+        /* 背景の「10shiten.jpg」 */
+        .bg-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
 
-#baseImage {
-  width: 100%;
-  display: block;
-}
+        /* 入力用・文字表示用のオーバーレイレイヤー */
+        .interactive-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
 
-.tapArea {
-  position: absolute;
-  cursor: pointer;
-}
+        /* 吹き出しごとの配置グループ */
+        .bubble-group {
+            position: absolute;
+            /* A4画像内での吹き出しのサイズ感に合わせる */
+            width: 145px;
+            height: 80px;
+            box-sizing: border-box;
+        }
 
-.previewText {
-  position: absolute;
-  white-space: pre-wrap;
-  color: #333;
-  pointer-events: none;
-  font-size: 22px;
-  line-height: 1.35;
-}
+        /* 実際の入力欄（入力するときだけ出てくる四角い枠） */
+        .bubble-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(74, 144, 226, 0.1); /* ほんのり青い透明 */
+            border: 2px dashed var(--primary-color); /* 青い点線の四角枠 */
+            border-radius: 8px;
+            box-sizing: border-box;
+            padding: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+            resize: none;
+            overflow: hidden;
+            color: #333;
+            text-align: center;
+            outline: none;
+            transition: all 0.2s;
+        }
+        /* 入力中（フォーカス時）は枠を強調 */
+        .bubble-input:focus {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 8px rgba(74, 144, 226, 0.5);
+            z-index: 10;
+        }
 
-/* 右側：青い入力欄 */
-#rightArea {
-  width: 35%;
-  min-width: 260px;
-}
+        /* 保存・印刷時に、枠線を消して文字だけにするための設定（印刷モード用スタイル） */
+        .mode-output .bubble-input {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 8px;
+            /* 入力していない空の枠は完全に非表示にする */
+            color: rgba(0,0,0,1);
+        }
+        .mode-output .bubble-input::placeholder {
+            color: transparent !important;
+        }
 
-#inputBox {
-  background: #e3f2fd;
-  border-radius: 10px;
-  padding: 15px;
-  min-height: 200px;
-}
+        /* --- 20箇所の吹き出し位置データ（A4サイズ内の絶対配置） --- */
+        /* 1段目 (視点1, 2) */
+        #g1-l { top: 185px; left: 100px; } #g1-r { top: 185px; left: 260px; }
+        #g2-l { top: 185px; left: 440px; } #g2-r { top: 185px; left: 600px; }
+        
+        /* 2段目 (視点3, 4, 5) */
+        #g3-l { top: 380px; left: 100px; } #g3-r { top: 380px; left: 260px; }
+        #g4-l { top: 380px; left: 440px; } #g4-r { top: 380px; left: 600px; }
+        /* ※5番の調整用（元画像の位置に応じて後ほど微調整可能） */
+        #g5-l { top: 480px; left: 100px; } #g5-r { top: 480px; left: 260px; }
 
-textarea {
-  width: 100%;
-  height: 180px;
-  font-size: 18px;
-  padding: 10px;
-  box-sizing: border-box;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
+        /* 3段目 (視点6, 7) */
+        #g6-l { top: 610px; left: 100px; } #g6-r { top: 610px; left: 260px; }
+        #g7-l { top: 610px; left: 440px; } #g7-r { top: 610px; left: 600px; }
 
-/* 保存ボタン */
-#downloadBtn {
-  width: 100%;
-  padding: 14px;
-  margin-top: 20px;
-  font-size: 20px;
-  border: none;
-  border-radius: 8px;
-  background: #4caf50;
-  color: #fff;
-}
-</style>
+        /* 4段目 (視点8, 9, 10) */
+        #g8-l { top: 810px; left: 100px; } #g8-r { top: 810px; left: 260px; }
+        #g9-l { top: 810px; left: 440px; } #g9-r { top: 810px; left: 600px; }
+        /* ※10番の調整用 */
+        #g10-l { top: 910px; left: 100px; } #g10-r { top: 910px; left: 260px; }
+
+        /* 印刷時のA4最適化設定 */
+        @media print {
+            body { background: white; padding: 0; }
+            .control-panel { display: none; }
+            #canvas-container { box-shadow: none; }
+        }
+    </style>
 </head>
-
 <body>
 
-<div id="leftArea">
-  <img id="baseImage" src="10shiten.png">
-</div>
+    <h1>10の視点 シート入力システム</h1>
 
-<div id="rightArea">
-  <div id="inputBox">
-    <textarea id="editText" placeholder="ここに入力"></textarea>
-  </div>
-  <button id="downloadBtn">保存</button>
-</div>
+    <div class="control-panel">
+        <button class="btn" onclick="downloadImage()">画像として保存</button>
+        <button class="btn btn-print" onclick="window.print()">A4印刷する</button>
+    </div>
 
-<script>
-const IMG_W = 1414;
-const IMG_H = 2000;
+    <div id="canvas-container">
+        <img src="ここに画像のURLを入れます" alt="10の視点" class="bg-image" id="bg-img">
+        
+        <div class="interactive-layer" id="interactive-layer">
+            <div class="bubble-group" id="g1-l"><textarea class="bubble-input" placeholder="1男の心の声"></textarea></div>
+            <div class="bubble-group" id="g1-r"><textarea class="bubble-input" placeholder="1女の心の声"></textarea></div>
+            <div class="bubble-group" id="g2-l"><textarea class="bubble-input" placeholder="2男の心の声"></textarea></div>
+            <div class="bubble-group" id="g2-r"><textarea class="bubble-input" placeholder="2女の心の声"></textarea></div>
+            
+            <div class="bubble-group" id="g3-l"><textarea class="bubble-input" placeholder="3男の心の声"></textarea></div>
+            <div class="bubble-group" id="g3-r"><textarea class="bubble-input" placeholder="3女の心の声"></textarea></div>
+            <div class="bubble-group" id="g4-l"><textarea class="bubble-input" placeholder="4男の心の声"></textarea></div>
+            <div class="bubble-group" id="g4-r"><textarea class="bubble-input" placeholder="4女の心の声"></textarea></div>
+            <div class="bubble-group" id="g5-l"><textarea class="bubble-input" placeholder="5男の心の声"></textarea></div>
+            <div class="bubble-group" id="g5-r"><textarea class="bubble-input" placeholder="5女の心の声"></textarea></div>
 
-const areas = [
-  {id:"1", x:163, y:334, w:128, h:56},
-  {id:"2", x:343, y:334, w:132, h:62},
-  {id:"3", x:895, y:336, w:137, h:51},
-  {id:"4", x:1079, y:335, w:135, h:64},
+            <div class="bubble-group" id="g6-l"><textarea class="bubble-input" placeholder="6男の心の声"></textarea></div>
+            <div class="bubble-group" id="g6-r"><textarea class="bubble-input" placeholder="6女の心の声"></textarea></div>
+            <div class="bubble-group" id="g7-l"><textarea class="bubble-input" placeholder="7男の心の声"></textarea></div>
+            <div class="bubble-group" id="g7-r"><textarea class="bubble-input" placeholder="7女の心の声"></textarea></div>
 
-  {id:"5", x:159, y:705, w:130, h:56},
-  {id:"6", x:343, y:706, w:136, h:59},
-  {id:"7", x:535, y:703, w:124, h:60},
-  {id:"8", x:709, y:706, w:137, h:60},
-  {id:"9", x:900, y:706, w:131, h:51},
-  {id:"10", x:1079, y:705, w:135, h:63},
+            <div class="bubble-group" id="g8-l"><textarea class="bubble-input" placeholder="8男の心の声"></textarea></div>
+            <div class="bubble-group" id="g8-r"><textarea class="bubble-input" placeholder="8女の心の声"></textarea></div>
+            <div class="bubble-group" id="g9-l"><textarea class="bubble-input" placeholder="9男の心の声"></textarea></div>
+            <div class="bubble-group" id="g9-r"><textarea class="bubble-input" placeholder="9女の心の声"></textarea></div>
+            <div class="bubble-group" id="g10-l"><textarea class="bubble-input" placeholder="10男の心の声"></textarea></div>
+            <div class="bubble-group" id="g10-r"><textarea class="bubble-input" placeholder="10女の心の声"></textarea></div>
+        </div>
+    </div>
 
-  {id:"11", x:162, y:1061, w:129, h:58},
-  {id:"12", x:343, y:1060, w:136, h:64},
-  {id:"13", x:903, y:1058, w:124, h:59},
-  {id:"14", x:1079, y:1061, w:132, h:66},
+    <script>
+        // 画像としてダウンロードする処理
+        function downloadImage() {
+            const container = document.getElementById('canvas-container');
+            
+            // 一時的に「出力モード（四角い枠線を消す）」にする
+            container.classList.add('mode-output');
 
-  {id:"15", x:157, y:1417, w:133, h:56},
-  {id:"16", x:339, y:1415, w:133, h:63},
-  {id:"17", x:535, y:1412, w:125, h:57},
-  {id:"18", x:710, y:1414, w:134, h:67},
-  {id:"19", x:902, y:1413, w:124, h:56},
-  {id:"20", x:1078, y:1415, w:134, h:62},
-];
+            // 画面を画像に変換
+            html2canvas(container, {
+                useCORS: true, // ネット上の画像を読み込むための設定
+                scale: 2       // 画質を綺麗にするために2倍のサイズで保存
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = '10の視点_心の備蓄シート.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                // ダウンロードが終わったら「入力モード（四角い枠線あり）」に戻す
+                container.classList.remove('mode-output');
+            });
+        }
 
-let texts = {};
-let previewDivs = {};
-let currentId = null;
-
-const baseImage = document.getElementById("baseImage");
-const leftArea = document.getElementById("leftArea");
-
-function init() {
-  const displayW = baseImage.clientWidth;
-  const scale = displayW / IMG_W;
-
-  areas.forEach(a => {
-    const left = a.x * scale;
-    const top  = a.y * scale;
-    const w    = a.w * scale;
-    const h    = a.h * scale;
-
-    const div = document.createElement("div");
-    div.className = "tapArea";
-    div.style.left = left + "px";
-    div.style.top = top + "px";
-    div.style.width = w + "px";
-    div.style.height = h + "px";
-    div.dataset.id = a.id;
-
-    div.onclick = () => {
-      currentId = a.id;
-      document.getElementById("editText").value = texts[a.id] || "";
-    };
-
-    leftArea.appendChild(div);
-
-    const p = document.createElement("div");
-    p.className = "previewText";
-    p.style.left = (left + 12 * scale) + "px";
-    p.style.top = (top + 12 * scale) + "px";
-    p.style.width = (w - 24 * scale) + "px";
-    p.style.height = (h - 24 * scale) + "px";
-    p.style.fontSize = (22 * scale) + "px";
-    p.style.lineHeight = (22 * scale * 1.35) + "px";
-
-    leftArea.appendChild(p);
-    previewDivs[a.id] = p;
-  });
-}
-
-baseImage.addEventListener("load", init);
-if (baseImage.complete) init();
-
-document.getElementById("editText").addEventListener("input", () => {
-  if (!currentId) return;
-  const t = document.getElementById("editText").value;
-  texts[currentId] = t;
-  previewDivs[currentId].innerText = t;
-});
-
-document.getElementById("downloadBtn").onclick = () => {
-  const canvas = document.createElement("canvas");
-  canvas.width = IMG_W;
-  canvas.height = IMG_H;
-  const ctx = canvas.getContext("2d");
-
-  const img = new Image();
-  img.src = "10shiten.png";
-
-  img.onload = () => {
-    ctx.drawImage(img, 0, 0, IMG_W, IMG_H);
-
-    areas.forEach(a => {
-      const text = texts[a.id] || "";
-      const x = a.x + 12;
-      const y = a.y + 20;
-
-      ctx.font = "22px 'M PLUS Rounded 1c'";
-      ctx.fillStyle = "#333";
-      ctx.textBaseline = "top";
-
-      const lines = text.split("\n");
-      lines.forEach((line, i) => {
-        ctx.fillText(line, x, y + i * 30);
-      });
-    });
-
-    const link = document.createElement("a");
-    link.download = "entry.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  };
-};
-</script>
-
+        // 印刷ボタンが押されたときの前処理
+        window.onbeforeprint = function() {
+            document.getElementById('canvas-container').classList.add('mode-output');
+        };
+        // 印刷が終わった後の後処理
+        window.onafterprint = function() {
+            document.getElementById('canvas-container').classList.remove('mode-output');
+        };
+    </script>
 </body>
 </html>
