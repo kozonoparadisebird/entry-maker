@@ -1,8 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>心の備蓄の入口メーカー</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  text-align: center;
+  background: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+#container {
+  position: relative;
+  width: 90%;
+  max-width: 800px;
+  margin: 20px auto;
+}
+
+#baseImage {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.tapArea {
+  position: absolute;
+  border: 1px solid #7EC8E3;
+  border-radius: 6px;
+}
+
+.previewText {
+  position: absolute;
+  color: #333;
+  pointer-events: none;
+  white-space: normal;
+  overflow-wrap: break-word;
+  line-height: 1.35;
+  font-size: 22px;
+}
+
+/* 保存ボタン */
+#saveBtn {
+  position: fixed;
+  right: 20px;
+  bottom: 70px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  font-size: 28px;
+  border: none;
+}
+
+#saveLabel {
+  position: fixed;
+  right: 6px;
+  bottom: 20px;
+  font-size: 12px;
+  color: #333;
+  line-height: 1.3;
+}
+</style>
+</head>
+
+<body>
+
+<div id="container">
+  <img id="baseImage" src="10shiten.png">
+</div>
+
+<button id="saveBtn">⬇</button>
+<div id="saveLabel">保存・印刷<br>はこちら</div>
+
+<!-- モーダル -->
+<div id="modalBg" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4);">
+  <div id="modal" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border-radius:12px; width:80%; max-width:300px;">
+    <input id="editText" type="text" style="width:100%; padding:8px; font-size:16px;">
+    <div id="maxInfo" style="margin-top:6px; font-size:13px; color:#666;"></div>
+    <button id="saveText" style="padding:8px 16px; font-size:16px; margin-top:10px;">保存</button>
+  </div>
+</div>
+
 <script>
 const IMG_W = 1414;
 const IMG_H = 2000;
 
-const areas = [ /* 省略（あなたのままでOK） */ ];
+const areas = [
+  {id:"1", x:163, y:334, w:128, h:56},
+  {id:"2", x:343, y:334, w:132, h:62},
+  {id:"3", x:895, y:336, w:137, h:51},
+  {id:"4", x:1079, y:335, w:135, h:64},
+
+  {id:"5", x:159, y:705, w:130, h:56},
+  {id:"6", x:343, y:706, w:136, h:59},
+  {id:"7", x:535, y:703, w:124, h:60},
+  {id:"8", x:709, y:706, w:137, h:60},
+  {id:"9", x:900, y:706, w:131, h:51},
+  {id:"10", x:1079, y:705, w:135, h:63},
+
+  {id:"11", x:162, y:1061, w:129, h:58},
+  {id:"12", x:343, y:1060, w:136, h:64},
+  {id:"13", x:903, y:1058, w:124, h:59},
+  {id:"14", x:1079, y:1061, w:132, h:66},
+
+  {id:"15", x:157, y:1417, w:133, h:56},
+  {id:"16", x:339, y:1415, w:133, h:63},
+  {id:"17", x:535, y:1412, w:125, h:57},
+  {id:"18", x:710, y:1414, w:134, h:67},
+  {id:"19", x:902, y:1413, w:124, h:56},
+  {id:"20", x:1078, y:1415, w:134, h:62},
+];
 
 let texts = {};
 let previewDivs = {};
@@ -12,7 +124,7 @@ let currentId = null;
 const baseImage = document.getElementById("baseImage");
 const container = document.getElementById("container");
 
-// ★★★ これが決定的な修正 ★★★
+// ★★★ ここが決定的な修正：init() を必ず実行する ★★★
 function init() {
   const displayW = baseImage.clientWidth;
   const displayH = baseImage.clientHeight;
@@ -66,11 +178,30 @@ function init() {
   });
 }
 
-// ★ load が発火しない場合に備えて両方書く
+// ★ load が発火したら init
 baseImage.addEventListener("load", init);
 
-// ★ すでに読み込み済みなら即実行
+// ★ 読み込み済みなら即 init
 if (baseImage.complete) {
   init();
 }
+
+// 入力制限
+document.getElementById("editText").addEventListener("input", function() {
+  const max = maxCharsMap[currentId];
+  if (this.value.length > max) {
+    this.value = this.value.slice(0, max);
+  }
+});
+
+// 保存
+document.getElementById("saveText").onclick = () => {
+  const val = document.getElementById("editText").value;
+  texts[currentId] = val;
+  previewDivs[currentId].innerText = val;
+  document.getElementById("modalBg").style.display = "none";
+};
 </script>
+
+</body>
+</html>
