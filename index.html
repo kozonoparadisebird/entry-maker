@@ -130,25 +130,31 @@ h1 {
 </div>
 
 <script>
-// 10コマ画像：2・3・2・3 の4段構成（割合ベース）
+// 20吹き出しの絶対座標（px）
 const areas = [
-  // 1段目（2つ）
-  {id:"1", x:0.13, y:0.085, w:0.30, h:0.075},
-  {id:"2", x:0.57, y:0.085, w:0.30, h:0.075},
+  {id:"1", x:163, y:334, w:128, h:56},
+  {id:"2", x:343, y:334, w:132, h:62},
+  {id:"3", x:895, y:336, w:137, h:51},
+  {id:"4", x:1079, y:335, w:135, h:64},
 
-  // 2段目（3つ）
-  {id:"3", x:0.07, y:0.245, w:0.26, h:0.075},
-  {id:"4", x:0.37, y:0.245, w:0.26, h:0.075},
-  {id:"5", x:0.67, y:0.245, w:0.26, h:0.075},
+  {id:"5", x:159, y:705, w:130, h:56},
+  {id:"6", x:343, y:706, w:136, h:59},
+  {id:"7", x:535, y:703, w:124, h:60},
+  {id:"8", x:709, y:706, w:137, h:60},
+  {id:"9", x:900, y:706, w:131, h:51},
+  {id:"10", x:1079, y:705, w:135, h:63},
 
-  // 3段目（2つ）
-  {id:"6", x:0.13, y:0.405, w:0.30, h:0.075},
-  {id:"7", x:0.57, y:0.405, w:0.30, h:0.075},
+  {id:"11", x:162, y:1061, w:129, h:58},
+  {id:"12", x:343, y:1060, w:136, h:64},
+  {id:"13", x:903, y:1058, w:124, h:59},
+  {id:"14", x:1079, y:1061, w:132, h:66},
 
-  // 4段目（3つ）
-  {id:"8", x:0.07, y:0.565, w:0.26, h:0.075},
-  {id:"9", x:0.37, y:0.565, w:0.26, h:0.075},
-  {id:"10", x:0.67, y:0.565, w:0.26, h:0.075},
+  {id:"15", x:157, y:1417, w:133, h:56},
+  {id:"16", x:339, y:1415, w:133, h:63},
+  {id:"17", x:535, y:1412, w:125, h:57},
+  {id:"18", x:710, y:1414, w:134, h:67},
+  {id:"19", x:902, y:1413, w:124, h:56},
+  {id:"20", x:1078, y:1415, w:134, h:62},
 ];
 
 let texts = {};
@@ -160,14 +166,13 @@ const baseImage = document.getElementById("baseImage");
 
 // タップ領域＆プレビュー配置
 baseImage.onload = () => {
-  const W = baseImage.clientWidth;
-  const H = baseImage.clientHeight;
+  const scale = baseImage.clientWidth / 1414; // 元画像幅に対する縮尺
 
   areas.forEach(a => {
-    const left = a.x * W;
-    const top  = a.y * H;
-    const w    = a.w * W;
-    const h    = a.h * H;
+    const left = a.x * scale;
+    const top  = a.y * scale;
+    const w    = a.w * scale;
+    const h    = a.h * scale;
 
     // タップ領域
     const div = document.createElement("div");
@@ -189,10 +194,10 @@ baseImage.onload = () => {
     // プレビュー
     const p = document.createElement("div");
     p.className = "previewText";
-    p.style.left = (left + 12) + "px";
-    p.style.top = (top + 12) + "px";
-    p.style.width = (w - 24) + "px";
-    p.style.height = (h - 24) + "px";
+    p.style.left = (left + 12 * scale) + "px";
+    p.style.top = (top + 12 * scale) + "px";
+    p.style.width = (w - 24 * scale) + "px";
+    p.style.height = (h - 24 * scale) + "px";
     container.appendChild(p);
 
     previewDivs[a.id] = p;
@@ -236,10 +241,10 @@ document.getElementById("saveBtn").onclick = () => {
       const text = texts[a.id];
       if (!text) return;
 
-      const x = a.x * img.width;
-      const y = a.y * img.height;
-      const w = a.w * img.width;
-      const h = a.h * img.height;
+      const x = a.x;
+      const y = a.y;
+      const w = a.w;
+      const h = a.h;
 
       const boxX = x + 12;
       const boxY = y + 12;
