@@ -15,7 +15,7 @@ body {
 #container {
   position: relative;
   width: 100%;
-  max-width: 500px;
+  max-width: 700px;
   margin: 0 auto;
 }
 
@@ -80,6 +80,8 @@ button {
 <div id="container">
   <img id="baseImage" src="10shiten.png">
 </div>
+
+<!-- ★ 旧アプリと同じ位置：画像の下に保存ボタン ★ -->
 <div id="saveArea" style="text-align:center; margin:20px 0;">
   <button id="downloadBtn"
     style="
@@ -93,14 +95,16 @@ button {
     保存
   </button>
 </div>
+
 <div id="modalBg">
   <div id="modal">
     <div id="maxInfo" style="margin-bottom:6px; font-size:14px; color:#666;"></div>
     <textarea id="editText"></textarea>
-    <button id="saveBtn">保存</button>
+    <button id="modalSaveBtn">保存</button>
     <button id="closeBtn" style="background:#999;">閉じる</button>
   </div>
 </div>
+
 <script>
 const IMG_W = 1414;
 const IMG_H = 2000;
@@ -139,29 +143,26 @@ let currentId = null;
 const baseImage = document.getElementById("baseImage");
 const container = document.getElementById("container");
 
-let initialized = false; // 二重実行防止
+let initialized = false;
 
 function init() {
   if (initialized) return;
   initialized = true;
 
   const displayW = baseImage.clientWidth;
-  const displayH = baseImage.clientHeight;
-
-  const scaleX = (displayW / IMG_W) * 1.06;
-  const scaleY = (displayH / IMG_H) * 1.06;
+  const scale = displayW / IMG_W;
 
   areas.forEach(a => {
-    const left = a.x * scaleX;
-    const top  = a.y * scaleY;
-    const w    = a.w * scaleX;
-    const h    = a.h * scaleY;
+    const left = a.x * scale;
+    const top  = a.y * scale;
+    const w    = a.w * scale;
+    const h    = a.h * scale;
 
-    const fontSize = 22;
+    const fontSize = 22 * scale;
     const lineHeight = fontSize * 1.35;
 
-    const usableW = w - 24;
-    const usableH = h - 24;
+    const usableW = w - 24 * scale;
+    const usableH = h - 24 * scale;
 
     const maxLines = Math.floor(usableH / lineHeight);
     const maxCharsPerLine = Math.floor(usableW / (fontSize * 0.9));
@@ -187,10 +188,12 @@ function init() {
 
     const p = document.createElement("div");
     p.className = "previewText";
-    p.style.left = (left + 12) + "px";
-    p.style.top = (top + 12) + "px";
-    p.style.width = (w - 24) + "px";
-    p.style.height = (h - 24) + "px";
+    p.style.left = (left + 12 * scale) + "px";
+    p.style.top = (top + 12 * scale) + "px";
+    p.style.width = (w - 24 * scale) + "px";
+    p.style.height = (h - 24 * scale) + "px";
+    p.style.fontSize = fontSize + "px";
+    p.style.lineHeight = lineHeight + "px";
 
     container.appendChild(p);
     previewDivs[a.id] = p;
@@ -200,15 +203,13 @@ function init() {
 baseImage.addEventListener("load", init);
 if (baseImage.complete) init();
 
-document.getElementById("saveBtn").onclick = () => {
+document.getElementById("modalSaveBtn").onclick = () => {
   if (!currentId) return;
 
   const max = maxCharsMap[currentId];
   let t = document.getElementById("editText").value;
 
-  if (t.length > max) {
-    t = t.slice(0, max);
-  }
+  if (t.length > max) t = t.slice(0, max);
 
   texts[currentId] = t;
   previewDivs[currentId].innerText = t;
@@ -218,6 +219,40 @@ document.getElementById("saveBtn").onclick = () => {
 
 document.getElementById("closeBtn").onclick = () => {
   document.getElementById("modalBg").style.display = "none";
+};
+
+document.getElementById("downloadBtn").onclick = () => {
+  const canvas = document.createElement("canvas");
+  canvas.width = IMG_W;
+  canvas.height = IMG_H;
+  const ctx = canvas.getContext("2d");
+
+  const img = new Image();
+  img.src = "10shiten.png";
+
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0, IMG_W, IMG_H);
+
+    areas.forEach(a => {
+      const text = texts[a.id] || "";
+      const x = a.x + 12;
+      const y = a.y + 20;
+
+      ctx.font = "22px 'M PLUS Rounded 1c'";
+      ctx.fillStyle = "#333";
+      ctx.textBaseline = "top";
+
+      const lines = text.split("\n");
+      lines.forEach((line, i) => {
+        ctx.fillText(line, x, y + i * 30);
+      });
+    });
+
+    const link = document.createElement("a");
+    link.download = "entry.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
 };
 </script>
 
