@@ -42,7 +42,7 @@ body {
   line-height: 1.35;
 }
 
-/* 保存ボタン復活 */
+/* 保存ボタン */
 #saveBtn {
   position: fixed;
   right: 20px;
@@ -73,14 +73,15 @@ body {
   <img id="baseImage" src="10shiten.png">
 </div>
 
-<!-- 保存ボタン復活 -->
 <button id="saveBtn">⬇</button>
 <div id="saveLabel">保存・印刷<br>はこちら</div>
 
+<!-- モーダル -->
 <div id="modalBg" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4);">
   <div id="modal" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border-radius:12px; width:80%; max-width:300px;">
     <input id="editText" type="text" style="width:100%; padding:8px; font-size:16px;">
-    <button id="saveText" style="padding:8px 16px; font-size:16px;">保存</button>
+    <div id="maxInfo" style="margin-top:6px; font-size:13px; color:#666;"></div>
+    <button id="saveText" style="padding:8px 16px; font-size:16px; margin-top:10px;">保存</button>
   </div>
 </div>
 
@@ -118,25 +119,38 @@ const areas = [
 
 let texts = {};
 let previewDivs = {};
+let maxCharsMap = {};
 let currentId = null;
 
 const container = document.getElementById("container");
 const baseImage = document.getElementById("baseImage");
 
 baseImage.onload = () => {
-  // 実表示サイズを正確に取得（ズレ解消の核心）
   const rect = baseImage.getBoundingClientRect();
   const displayW = rect.width;
   const displayH = rect.height;
 
-  const scaleX = displayW / IMG_W;
-  const scaleY = displayH / IMG_H;
+  // ズレ補正（あなたの感覚に合わせた最適値）
+  const scaleX = (displayW / IMG_W) * 1.006;
+  const scaleY = (displayH / IMG_H) * 1.006;
 
   areas.forEach(a => {
     const left = a.x * scaleX;
     const top  = a.y * scaleY;
     const w    = a.w * scaleX;
     const h    = a.h * scaleY;
+
+    // 最大文字数を自動計算
+    const usableH = h - (12 * scaleY * 2);
+    const usableW = w - (12 * scaleX * 2);
+    const fontSize = 22 * scaleX;
+    const lineHeight = fontSize + 4;
+
+    const maxLines = Math.floor(usableH / lineHeight);
+    const maxCharsPerLine = Math.floor(usableW / (fontSize * 0.9));
+    const maxChars = Math.max(1, maxLines * maxCharsPerLine);
+
+    maxCharsMap[a.id] = maxChars;
 
     // タップ枠
     const div = document.createElement("div");
@@ -150,6 +164,7 @@ baseImage.onload = () => {
     div.onclick = () => {
       currentId = a.id;
       document.getElementById("editText").value = texts[a.id] || "";
+      document.getElementById("maxInfo").innerText = `（最大 ${maxCharsMap[a.id]} 文字）`;
       document.getElementById("modalBg").style.display = "block";
     };
 
@@ -168,7 +183,15 @@ baseImage.onload = () => {
   });
 };
 
-// モーダル保存 → プレビュー反映
+// 入力ブロック
+document.getElementById("editText").addEventListener("input", function() {
+  const max = maxCharsMap[currentId];
+  if (this.value.length > max) {
+    this.value = this.value.slice(0, max);
+  }
+});
+
+// 保存 → プレビュー反映
 document.getElementById("saveText").onclick = () => {
   const val = document.getElementById("editText").value;
   texts[currentId] = val;
