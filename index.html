@@ -102,9 +102,9 @@ const baseImage = document.getElementById("baseImage");
 
 baseImage.onload = () => {
 
-  const rect = baseImage.getBoundingClientRect();
-  const displayW = rect.width;
-  const displayH = rect.height;
+  // ★ 画像の実際の表示サイズ（正しい取得方法）
+  const displayW = baseImage.clientWidth;
+  const displayH = baseImage.clientHeight;
 
   // ★ 正しい補正係数 1.06（1段階のみ）
   const scaleX = (displayW / IMG_W) * 1.06;
