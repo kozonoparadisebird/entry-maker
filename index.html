@@ -40,7 +40,18 @@ h1 {
 
 .tapArea {
   position: absolute;
+  border: 1px solid #7EC8E3; /* ←常に水色の枠 */
+  border-radius: 6px;
   background: rgba(0,0,0,0);
+}
+
+.previewText {
+  position: absolute;
+  color: #333;
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 #saveBtn {
@@ -133,6 +144,7 @@ const areas = [
 ];
 
 let texts = {};
+let previewDivs = {};
 let currentId = null;
 
 const container = document.getElementById("container");
@@ -161,13 +173,49 @@ baseImage.onload = () => {
     };
 
     container.appendChild(div);
+
+    // プレビュー用
+    const p = document.createElement("div");
+    p.className = "previewText";
+    p.style.left = (a.x * displayW) + "px";
+    p.style.top = (a.y * displayH) + "px";
+    p.style.width = (a.w * displayW) + "px";
+    p.style.height = (a.h * displayH) + "px";
+    p.style.lineHeight = (a.h * displayH) + "px";
+
+    container.appendChild(p);
+    previewDivs[a.id] = p;
   });
 };
 
-// モーダル保存
+// モーダル保存 → プレビュー反映
 document.getElementById("saveText").onclick = () => {
   const val = document.getElementById("editText").value;
   texts[currentId] = val;
+
+  const p = previewDivs[currentId];
+  p.innerText = val;
+
+  // 自動フォント調整
+  let fontSize = 32;
+  const maxWidth = p.clientWidth - 4;
+
+  const temp = document.createElement("span");
+  temp.style.visibility = "hidden";
+  temp.style.whiteSpace = "nowrap";
+  temp.style.fontFamily = "M PLUS Rounded 1c";
+  document.body.appendChild(temp);
+
+  while (fontSize > 10) {
+    temp.style.fontSize = fontSize + "px";
+    temp.innerText = val;
+    if (temp.clientWidth <= maxWidth) break;
+    fontSize -= 1;
+  }
+
+  p.style.fontSize = fontSize + "px";
+  document.body.removeChild(temp);
+
   document.getElementById("modalBg").style.display = "none";
 };
 
@@ -184,15 +232,23 @@ document.getElementById("saveBtn").onclick = () => {
 
     ctx.drawImage(img, 0, 0);
 
-    ctx.font = "32px 'M PLUS Rounded 1c'";
-    ctx.fillStyle = "#333";
-    ctx.textAlign = "center";
-
     areas.forEach(a => {
       const text = texts[a.id];
       if (text) {
+        let fontSize = 32;
+        ctx.font = fontSize + "px 'M PLUS Rounded 1c'";
+        const maxWidth = img.width * a.w - 10;
+
+        while (ctx.measureText(text).width > maxWidth && fontSize > 10) {
+          fontSize -= 1;
+          ctx.font = fontSize + "px 'M PLUS Rounded 1c'";
+        }
+
+        ctx.fillStyle = "#333";
+        ctx.textAlign = "center";
         const x = img.width * a.x + (img.width * a.w) / 2;
-        const y = img.height * a.y + (img.height * a.h) / 2 + 10;
+        const y = img.height * a.y + (img.height * a.h) / 2 + fontSize / 2 - 4;
+
         ctx.fillText(text, x, y);
       }
     });
