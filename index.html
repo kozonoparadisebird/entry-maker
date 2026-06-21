@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>心の備蓄の入口メーカー</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body {
   font-family: "M PLUS Rounded 1c", sans-serif;
@@ -12,32 +13,38 @@ body {
   margin: 0;
   padding: 0;
 }
+
 h1 {
   margin-top: 30px;
   font-size: 24px;
   color: #333;
 }
+
 .sub {
   margin-top: 6px;
   font-size: 15px;
   color: #666;
 }
+
 #container {
   position: relative;
   width: 90%;
   max-width: 800px;
   margin: 20px auto;
 }
+
 #baseImage {
   width: 100%;
   display: block;
 }
+
 .tapArea {
   position: absolute;
   border: 1px solid #7EC8E3;
   border-radius: 6px;
   background: rgba(0,0,0,0);
 }
+
 .previewText {
   position: absolute;
   color: #333;
@@ -45,8 +52,9 @@ h1 {
   pointer-events: none;
   white-space: normal;
   overflow-wrap: break-word;
-  text-align: center;
+  line-height: 1.35;
 }
+
 #saveBtn {
   position: fixed;
   right: 20px;
@@ -59,6 +67,7 @@ h1 {
   font-size: 28px;
   border: none;
 }
+
 #saveLabel {
   position: fixed;
   right: 6px;
@@ -67,6 +76,7 @@ h1 {
   color: #333;
   line-height: 1.3;
 }
+
 #modalBg {
   position: fixed;
   top:0; left:0;
@@ -74,6 +84,7 @@ h1 {
   background: rgba(0,0,0,0.4);
   display:none;
 }
+
 #modal {
   position:absolute;
   top:50%; left:50%;
@@ -84,18 +95,21 @@ h1 {
   width:80%;
   max-width:300px;
 }
+
 #modal input {
   width:100%;
   padding:8px;
   font-size:16px;
   margin-bottom:10px;
 }
+
 #modal button {
   padding:8px 16px;
   font-size:16px;
 }
 </style>
 </head>
+
 <body>
 
 <h1>心の備蓄の入口メーカー</h1>
@@ -116,28 +130,25 @@ h1 {
 </div>
 
 <script>
-// 10コマ版：割合ベース（横2つ×縦10段）
+// 10コマ画像：2・3・2・3 の4段構成（割合ベース）
 const areas = [
-  {id:"1L", x:0.16, y:0.085, w:0.30, h:0.07},
-  {id:"1R", x:0.54, y:0.085, w:0.30, h:0.07},
-  {id:"2L", x:0.16, y:0.165, w:0.30, h:0.07},
-  {id:"2R", x:0.54, y:0.165, w:0.30, h:0.07},
-  {id:"3L", x:0.16, y:0.245, w:0.30, h:0.07},
-  {id:"3R", x:0.54, y:0.245, w:0.30, h:0.07},
-  {id:"4L", x:0.16, y:0.325, w:0.30, h:0.07},
-  {id:"4R", x:0.54, y:0.325, w:0.30, h:0.07},
-  {id:"5L", x:0.16, y:0.405, w:0.30, h:0.07},
-  {id:"5R", x:0.54, y:0.405, w:0.30, h:0.07},
-  {id:"6L", x:0.16, y:0.485, w:0.30, h:0.07},
-  {id:"6R", x:0.54, y:0.485, w:0.30, h:0.07},
-  {id:"7L", x:0.16, y:0.565, w:0.30, h:0.07},
-  {id:"7R", x:0.54, y:0.565, w:0.30, h:0.07},
-  {id:"8L", x:0.16, y:0.645, w:0.30, h:0.07},
-  {id:"8R", x:0.54, y:0.645, w:0.30, h:0.07},
-  {id:"9L", x:0.16, y:0.725, w:0.30, h:0.07},
-  {id:"9R", x:0.54, y:0.725, w:0.30, h:0.07},
-  {id:"10L", x:0.16, y:0.805, w:0.30, h:0.07},
-  {id:"10R", x:0.54, y:0.805, w:0.30, h:0.07},
+  // 1段目（2つ）
+  {id:"1", x:0.13, y:0.085, w:0.30, h:0.075},
+  {id:"2", x:0.57, y:0.085, w:0.30, h:0.075},
+
+  // 2段目（3つ）
+  {id:"3", x:0.07, y:0.245, w:0.26, h:0.075},
+  {id:"4", x:0.37, y:0.245, w:0.26, h:0.075},
+  {id:"5", x:0.67, y:0.245, w:0.26, h:0.075},
+
+  // 3段目（2つ）
+  {id:"6", x:0.13, y:0.405, w:0.30, h:0.075},
+  {id:"7", x:0.57, y:0.405, w:0.30, h:0.075},
+
+  // 4段目（3つ）
+  {id:"8", x:0.07, y:0.565, w:0.26, h:0.075},
+  {id:"9", x:0.37, y:0.565, w:0.26, h:0.075},
+  {id:"10", x:0.67, y:0.565, w:0.26, h:0.075},
 ];
 
 let texts = {};
@@ -147,17 +158,18 @@ let currentId = null;
 const container = document.getElementById("container");
 const baseImage = document.getElementById("baseImage");
 
-// タップ領域＆プレビュー配置（割合 → 実サイズ）
+// タップ領域＆プレビュー配置
 baseImage.onload = () => {
-  const displayW = baseImage.clientWidth;
-  const displayH = baseImage.clientHeight;
+  const W = baseImage.clientWidth;
+  const H = baseImage.clientHeight;
 
   areas.forEach(a => {
-    const left = a.x * displayW;
-    const top  = a.y * displayH;
-    const w    = a.w * displayW;
-    const h    = a.h * displayH;
+    const left = a.x * W;
+    const top  = a.y * H;
+    const w    = a.w * W;
+    const h    = a.h * H;
 
+    // タップ領域
     const div = document.createElement("div");
     div.className = "tapArea";
     div.style.left = left + "px";
@@ -165,26 +177,29 @@ baseImage.onload = () => {
     div.style.width = w + "px";
     div.style.height = h + "px";
     div.dataset.id = a.id;
+
     div.onclick = () => {
       currentId = a.id;
       document.getElementById("editText").value = texts[a.id] || "";
       document.getElementById("modalBg").style.display = "block";
     };
+
     container.appendChild(div);
 
+    // プレビュー
     const p = document.createElement("div");
     p.className = "previewText";
-    p.style.left = (left + 10) + "px";
-    p.style.top = (top + 8) + "px";
-    p.style.width = (w - 20) + "px";
-    p.style.height = (h - 16) + "px";
-    p.style.lineHeight = "1.3";
+    p.style.left = (left + 12) + "px";
+    p.style.top = (top + 12) + "px";
+    p.style.width = (w - 24) + "px";
+    p.style.height = (h - 24) + "px";
     container.appendChild(p);
+
     previewDivs[a.id] = p;
   });
 };
 
-// モーダル保存 → プレビュー反映（折り返し＋自動縮小）
+// モーダル保存 → プレビュー反映
 document.getElementById("saveText").onclick = () => {
   const val = document.getElementById("editText").value;
   texts[currentId] = val;
@@ -192,7 +207,8 @@ document.getElementById("saveText").onclick = () => {
   const p = previewDivs[currentId];
   p.innerText = val;
 
-  let fontSize = 20;
+  // 自動縮小
+  let fontSize = 22;
   p.style.fontSize = fontSize + "px";
 
   while (p.scrollHeight > p.clientHeight && fontSize > 10) {
@@ -203,7 +219,7 @@ document.getElementById("saveText").onclick = () => {
   document.getElementById("modalBg").style.display = "none";
 };
 
-// PNG 保存（キャンバス側も割合で同じ位置に描画）
+// PNG 保存
 document.getElementById("saveBtn").onclick = () => {
   const img = new Image();
   img.src = "10shiten.png";
@@ -225,12 +241,12 @@ document.getElementById("saveBtn").onclick = () => {
       const w = a.w * img.width;
       const h = a.h * img.height;
 
-      const boxX = x + 10;
-      const boxY = y + 8;
-      const boxW = w - 20;
-      const boxH = h - 16;
+      const boxX = x + 12;
+      const boxY = y + 12;
+      const boxW = w - 24;
+      const boxH = h - 24;
 
-      let fontSize = 20;
+      let fontSize = 22;
       ctx.font = fontSize + "px 'M PLUS Rounded 1c'";
       ctx.fillStyle = "#333";
 
