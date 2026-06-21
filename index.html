@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>心の備蓄の入口メーカー</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body {
   font-family: "M PLUS Rounded 1c", sans-serif;
@@ -13,52 +12,45 @@ body {
   margin: 0;
   padding: 0;
 }
-
 h1 {
   margin-top: 30px;
   font-size: 24px;
   color: #333;
 }
-
 .sub {
   margin-top: 6px;
   font-size: 15px;
   color: #666;
 }
-
 #container {
   position: relative;
   width: 90%;
   max-width: 800px;
   margin: 20px auto;
 }
-
 #baseImage {
   width: 100%;
   display: block;
 }
-
 .tapArea {
   position: absolute;
   border: 1px solid #7EC8E3;
   border-radius: 6px;
   background: rgba(0,0,0,0);
 }
-
 .previewText {
   position: absolute;
   color: #333;
   font-family: "M PLUS Rounded 1c", sans-serif;
-  text-align: left;
   pointer-events: none;
   white-space: normal;
   overflow-wrap: break-word;
+  text-align: center;
 }
-
 #saveBtn {
   position: fixed;
   right: 20px;
-  bottom: 80px;
+  bottom: 70px;
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -67,15 +59,14 @@ h1 {
   font-size: 28px;
   border: none;
 }
-
 #saveLabel {
   position: fixed;
-  right: 10px;
+  right: 6px;
   bottom: 20px;
-  font-size: 14px;
+  font-size: 12px;
   color: #333;
+  line-height: 1.3;
 }
-
 #modalBg {
   position: fixed;
   top:0; left:0;
@@ -83,7 +74,6 @@ h1 {
   background: rgba(0,0,0,0.4);
   display:none;
 }
-
 #modal {
   position:absolute;
   top:50%; left:50%;
@@ -94,21 +84,18 @@ h1 {
   width:80%;
   max-width:300px;
 }
-
 #modal input {
   width:100%;
   padding:8px;
   font-size:16px;
   margin-bottom:10px;
 }
-
 #modal button {
   padding:8px 16px;
   font-size:16px;
 }
 </style>
 </head>
-
 <body>
 
 <h1>心の備蓄の入口メーカー</h1>
@@ -119,7 +106,7 @@ h1 {
 </div>
 
 <button id="saveBtn">⬇</button>
-<div id="saveLabel">保存・印刷はこちら</div>
+<div id="saveLabel">保存・印刷<br>はこちら</div>
 
 <div id="modalBg">
   <div id="modal">
@@ -129,34 +116,28 @@ h1 {
 </div>
 
 <script>
-// 実寸 1414×2000 の吹き出し座標（相棒が最適化）
+// 10コマ版：割合ベース（横2つ×縦10段）
 const areas = [
-  {id:"1L", x:160, y:140, w:420, h:120},
-  {id:"1R", x:830, y:140, w:420, h:120},
-
-  {id:"2L", x:160, y:350, w:420, h:120},
-  {id:"2R", x:830, y:350, w:420, h:120},
-
-  {id:"3L", x:160, y:560, w:420, h:120},
-  {id:"3R", x:830, y:560, w:420, h:120},
-
-  {id:"4L", x:160, y:770, w:420, h:120},
-  {id:"4R", x:830, y:770, w:420, h:120},
-
-  {id:"5L", x:160, y:980, w:420, h:120},
-  {id:"5R", x:830, y:980, w:420, h:120},
-
-  {id:"6L", x:160, y:1190, w:420, h:120},
-  {id:"6R", x:830, y:1190, w:420, h:120},
-
-  {id:"7L", x:160, y:1400, w:420, h:120},
-  {id:"7R", x:830, y:1400, w:420, h:120},
-
-  {id:"8L", x:160, y:1610, w:420, h:120},
-  {id:"8R", x:830, y:1610, w:420, h:120},
-
-  {id:"9L", x:160, y:1820, w:420, h:120},
-  {id:"9R", x:830, y:1820, w:420, h:120},
+  {id:"1L", x:0.16, y:0.085, w:0.30, h:0.07},
+  {id:"1R", x:0.54, y:0.085, w:0.30, h:0.07},
+  {id:"2L", x:0.16, y:0.165, w:0.30, h:0.07},
+  {id:"2R", x:0.54, y:0.165, w:0.30, h:0.07},
+  {id:"3L", x:0.16, y:0.245, w:0.30, h:0.07},
+  {id:"3R", x:0.54, y:0.245, w:0.30, h:0.07},
+  {id:"4L", x:0.16, y:0.325, w:0.30, h:0.07},
+  {id:"4R", x:0.54, y:0.325, w:0.30, h:0.07},
+  {id:"5L", x:0.16, y:0.405, w:0.30, h:0.07},
+  {id:"5R", x:0.54, y:0.405, w:0.30, h:0.07},
+  {id:"6L", x:0.16, y:0.485, w:0.30, h:0.07},
+  {id:"6R", x:0.54, y:0.485, w:0.30, h:0.07},
+  {id:"7L", x:0.16, y:0.565, w:0.30, h:0.07},
+  {id:"7R", x:0.54, y:0.565, w:0.30, h:0.07},
+  {id:"8L", x:0.16, y:0.645, w:0.30, h:0.07},
+  {id:"8R", x:0.54, y:0.645, w:0.30, h:0.07},
+  {id:"9L", x:0.16, y:0.725, w:0.30, h:0.07},
+  {id:"9R", x:0.54, y:0.725, w:0.30, h:0.07},
+  {id:"10L", x:0.16, y:0.805, w:0.30, h:0.07},
+  {id:"10R", x:0.54, y:0.805, w:0.30, h:0.07},
 ];
 
 let texts = {};
@@ -166,43 +147,44 @@ let currentId = null;
 const container = document.getElementById("container");
 const baseImage = document.getElementById("baseImage");
 
-// タップ領域配置
+// タップ領域＆プレビュー配置（割合 → 実サイズ）
 baseImage.onload = () => {
-  const scale = baseImage.clientWidth / 1414;
+  const displayW = baseImage.clientWidth;
+  const displayH = baseImage.clientHeight;
 
   areas.forEach(a => {
+    const left = a.x * displayW;
+    const top  = a.y * displayH;
+    const w    = a.w * displayW;
+    const h    = a.h * displayH;
+
     const div = document.createElement("div");
     div.className = "tapArea";
-
-    div.style.left = (a.x * scale) + "px";
-    div.style.top = (a.y * scale) + "px";
-    div.style.width = (a.w * scale) + "px";
-    div.style.height = (a.h * scale) + "px";
-
+    div.style.left = left + "px";
+    div.style.top = top + "px";
+    div.style.width = w + "px";
+    div.style.height = h + "px";
     div.dataset.id = a.id;
-
     div.onclick = () => {
       currentId = a.id;
       document.getElementById("editText").value = texts[a.id] || "";
       document.getElementById("modalBg").style.display = "block";
     };
-
     container.appendChild(div);
 
-    // プレビュー
     const p = document.createElement("div");
     p.className = "previewText";
-    p.style.left = (a.x * scale + 10) + "px";
-    p.style.top = (a.y * scale + 12) + "px";
-    p.style.width = (a.w * scale - 20) + "px";
-    p.style.height = (a.h * scale - 24) + "px";
-
+    p.style.left = (left + 10) + "px";
+    p.style.top = (top + 8) + "px";
+    p.style.width = (w - 20) + "px";
+    p.style.height = (h - 16) + "px";
+    p.style.lineHeight = "1.3";
     container.appendChild(p);
     previewDivs[a.id] = p;
   });
 };
 
-// モーダル保存 → プレビュー反映
+// モーダル保存 → プレビュー反映（折り返し＋自動縮小）
 document.getElementById("saveText").onclick = () => {
   const val = document.getElementById("editText").value;
   texts[currentId] = val;
@@ -210,11 +192,10 @@ document.getElementById("saveText").onclick = () => {
   const p = previewDivs[currentId];
   p.innerText = val;
 
-  // 自動縮小
-  let fontSize = 28;
+  let fontSize = 20;
   p.style.fontSize = fontSize + "px";
 
-  while (p.scrollHeight > p.clientHeight && fontSize > 12) {
+  while (p.scrollHeight > p.clientHeight && fontSize > 10) {
     fontSize -= 1;
     p.style.fontSize = fontSize + "px";
   }
@@ -222,15 +203,15 @@ document.getElementById("saveText").onclick = () => {
   document.getElementById("modalBg").style.display = "none";
 };
 
-// PNG 保存
+// PNG 保存（キャンバス側も割合で同じ位置に描画）
 document.getElementById("saveBtn").onclick = () => {
   const img = new Image();
   img.src = "10shiten.png";
 
   img.onload = () => {
     const canvas = document.createElement("canvas");
-    canvas.width = 1414;
-    canvas.height = 2000;
+    canvas.width = img.width;
+    canvas.height = img.height;
     const ctx = canvas.getContext("2d");
 
     ctx.drawImage(img, 0, 0);
@@ -239,39 +220,60 @@ document.getElementById("saveBtn").onclick = () => {
       const text = texts[a.id];
       if (!text) return;
 
-      const boxW = a.w - 20;
-      const boxH = a.h - 24;
+      const x = a.x * img.width;
+      const y = a.y * img.height;
+      const w = a.w * img.width;
+      const h = a.h * img.height;
 
-      let fontSize = 28;
+      const boxX = x + 10;
+      const boxY = y + 8;
+      const boxW = w - 20;
+      const boxH = h - 16;
+
+      let fontSize = 20;
       ctx.font = fontSize + "px 'M PLUS Rounded 1c'";
       ctx.fillStyle = "#333";
 
-      const lines = [];
-      let words = text.split("");
-
+      const chars = text.split("");
+      let lines = [];
       let line = "";
-      words.forEach(ch => {
+
+      const measure = t => ctx.measureText(t).width;
+
+      chars.forEach(ch => {
         const test = line + ch;
-        if (ctx.measureText(test).width > boxW) {
+        if (measure(test) > boxW) {
           lines.push(line);
           line = ch;
         } else {
           line = test;
         }
       });
-      lines.push(line);
+      if (line) lines.push(line);
 
-      while (lines.length * (fontSize + 4) > boxH && fontSize > 12) {
+      while (lines.length * (fontSize + 4) > boxH && fontSize > 10) {
         fontSize -= 1;
         ctx.font = fontSize + "px 'M PLUS Rounded 1c'";
+        lines = [];
+        line = "";
+        chars.forEach(ch => {
+          const test = line + ch;
+          if (measure(test) > boxW) {
+            lines.push(line);
+            line = ch;
+          } else {
+            line = test;
+          }
+        });
+        if (line) lines.push(line);
       }
 
       const totalH = lines.length * (fontSize + 4);
-      let y = a.y + (a.h - totalH) / 2 + fontSize;
+      let drawY = boxY + (boxH - totalH) / 2 + fontSize;
 
-      lines.forEach(line => {
-        ctx.fillText(line, a.x + 14, y);
-        y += fontSize + 4;
+      lines.forEach(l => {
+        ctx.fillText(l, boxX, drawY);
+        drawY += fontSize + 4;
       });
     });
 
