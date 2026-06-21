@@ -40,7 +40,7 @@ body {
   white-space: normal;
   overflow-wrap: break-word;
   line-height: 1.35;
-  font-size: 22px; /* ★ フォント固定 */
+  font-size: 22px;
 }
 </style>
 </head>
@@ -61,11 +61,9 @@ body {
 </div>
 
 <script>
-// 元画像サイズ
 const IMG_W = 1414;
 const IMG_H = 2000;
 
-// 吹き出し座標
 const areas = [
   {id:"1", x:163, y:334, w:128, h:56},
   {id:"2", x:343, y:334, w:132, h:62},
@@ -97,16 +95,16 @@ let previewDivs = {};
 let maxCharsMap = {};
 let currentId = null;
 
-const container = document.getElementById("container");
 const baseImage = document.getElementById("baseImage");
+const container = document.getElementById("container");
 
-baseImage.onload = () => {
+// ★ 画像読み込みを確実に待つ
+baseImage.addEventListener("load", () => {
 
-  // ★ 画像の実際の表示サイズ（正しい取得方法）
   const displayW = baseImage.clientWidth;
   const displayH = baseImage.clientHeight;
 
-  // ★ 正しい補正係数 1.06（1段階のみ）
+  // ★ 正しい 1.06 補正
   const scaleX = (displayW / IMG_W) * 1.06;
   const scaleY = (displayH / IMG_H) * 1.06;
 
@@ -117,20 +115,17 @@ baseImage.onload = () => {
     const w    = a.w * scaleX;
     const h    = a.h * scaleY;
 
-    // ★ 最大文字数（フォント固定22px）
     const fontSize = 22;
     const lineHeight = fontSize * 1.35;
 
-    const usableW = w - 24; // padding 12px × 2
+    const usableW = w - 24;
     const usableH = h - 24;
 
     const maxLines = Math.floor(usableH / lineHeight);
     const maxCharsPerLine = Math.floor(usableW / (fontSize * 0.9));
 
-    const maxChars = Math.max(1, maxLines * maxCharsPerLine);
-    maxCharsMap[a.id] = maxChars;
+    maxCharsMap[a.id] = Math.max(1, maxLines * maxCharsPerLine);
 
-    // タップ枠
     const div = document.createElement("div");
     div.className = "tapArea";
     div.style.left = left + "px";
@@ -148,20 +143,19 @@ baseImage.onload = () => {
 
     container.appendChild(div);
 
-    // プレビュー
     const p = document.createElement("div");
     p.className = "previewText";
     p.style.left = (left + 12) + "px";
     p.style.top = (top + 12) + "px";
     p.style.width = (w - 24) + "px";
     p.style.height = (h - 24) + "px";
-    container.appendChild(p);
 
+    container.appendChild(p);
     previewDivs[a.id] = p;
   });
-};
+});
 
-// 入力ブロック
+// 入力制限
 document.getElementById("editText").addEventListener("input", function() {
   const max = maxCharsMap[currentId];
   if (this.value.length > max) {
@@ -169,13 +163,11 @@ document.getElementById("editText").addEventListener("input", function() {
   }
 });
 
-// 保存 → プレビュー反映
+// 保存
 document.getElementById("saveText").onclick = () => {
   const val = document.getElementById("editText").value;
   texts[currentId] = val;
-
   previewDivs[currentId].innerText = val;
-
   document.getElementById("modalBg").style.display = "none";
 };
 </script>
