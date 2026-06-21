@@ -40,30 +40,7 @@ body {
   white-space: normal;
   overflow-wrap: break-word;
   line-height: 1.35;
-  font-size: 22px; /* ★ フォントサイズ固定 */
-}
-
-/* 保存ボタン */
-#saveBtn {
-  position: fixed;
-  right: 20px;
-  bottom: 70px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: white;
-  box-shadow: 0 0 8px rgba(0,0,0,0.2);
-  font-size: 28px;
-  border: none;
-}
-
-#saveLabel {
-  position: fixed;
-  right: 6px;
-  bottom: 20px;
-  font-size: 12px;
-  color: #333;
-  line-height: 1.3;
+  font-size: 22px; /* ★ フォント固定 */
 }
 </style>
 </head>
@@ -73,9 +50,6 @@ body {
 <div id="container">
   <img id="baseImage" src="10shiten.png">
 </div>
-
-<button id="saveBtn">⬇</button>
-<div id="saveLabel">保存・印刷<br>はこちら</div>
 
 <!-- モーダル -->
 <div id="modalBg" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4);">
@@ -91,7 +65,7 @@ body {
 const IMG_W = 1414;
 const IMG_H = 2000;
 
-// 20吹き出しの絶対座標
+// 吹き出し座標
 const areas = [
   {id:"1", x:163, y:334, w:128, h:56},
   {id:"2", x:343, y:334, w:132, h:62},
@@ -127,31 +101,33 @@ const container = document.getElementById("container");
 const baseImage = document.getElementById("baseImage");
 
 baseImage.onload = () => {
+
   const rect = baseImage.getBoundingClientRect();
   const displayW = rect.width;
   const displayH = rect.height;
 
-  // ★ 補正係数 1.06（あなたの指示）
+  // ★ 正しい補正係数 1.06（1段階のみ）
   const scaleX = (displayW / IMG_W) * 1.06;
   const scaleY = (displayH / IMG_H) * 1.06;
 
   areas.forEach(a => {
+
     const left = a.x * scaleX;
     const top  = a.y * scaleY;
     const w    = a.w * scaleX;
     const h    = a.h * scaleY;
 
-    // ★ 最大文字数を正しく計算（フォントサイズ固定）
-    const fontSize = 22; // ← ここが重要（固定）
+    // ★ 最大文字数（フォント固定22px）
+    const fontSize = 22;
     const lineHeight = fontSize * 1.35;
 
+    const usableW = w - 24; // padding 12px × 2
     const usableH = h - 24;
-    const usableW = w - 24;
 
     const maxLines = Math.floor(usableH / lineHeight);
     const maxCharsPerLine = Math.floor(usableW / (fontSize * 0.9));
-    const maxChars = Math.max(1, maxLines * maxCharsPerLine);
 
+    const maxChars = Math.max(1, maxLines * maxCharsPerLine);
     maxCharsMap[a.id] = maxChars;
 
     // タップ枠
@@ -185,7 +161,7 @@ baseImage.onload = () => {
   });
 };
 
-// ★ 入力ブロック
+// 入力ブロック
 document.getElementById("editText").addEventListener("input", function() {
   const max = maxCharsMap[currentId];
   if (this.value.length > max) {
@@ -198,10 +174,8 @@ document.getElementById("saveText").onclick = () => {
   const val = document.getElementById("editText").value;
   texts[currentId] = val;
 
-  const p = previewDivs[currentId];
-  p.innerText = val;
+  previewDivs[currentId].innerText = val;
 
-  // フォントサイズ固定なので縮小処理は不要
   document.getElementById("modalBg").style.display = "none";
 };
 </script>
