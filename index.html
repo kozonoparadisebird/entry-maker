@@ -40,7 +40,7 @@ h1 {
 
 .tapArea {
   position: absolute;
-  border: 1px solid #7EC8E3; /* ←常に水色の枠 */
+  border: 1px solid #7EC8E3;
   border-radius: 6px;
   background: rgba(0,0,0,0);
 }
@@ -49,15 +49,16 @@ h1 {
   position: absolute;
   color: #333;
   font-family: "M PLUS Rounded 1c", sans-serif;
-  text-align: center;
+  text-align: left;
   pointer-events: none;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 #saveBtn {
   position: fixed;
   right: 20px;
-  bottom: 20px;
+  bottom: 80px;
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -65,6 +66,14 @@ h1 {
   box-shadow: 0 0 8px rgba(0,0,0,0.2);
   font-size: 28px;
   border: none;
+}
+
+#saveLabel {
+  position: fixed;
+  right: 10px;
+  bottom: 20px;
+  font-size: 14px;
+  color: #333;
 }
 
 #modalBg {
@@ -110,6 +119,7 @@ h1 {
 </div>
 
 <button id="saveBtn">⬇</button>
+<div id="saveLabel">保存・印刷はこちら</div>
 
 <div id="modalBg">
   <div id="modal">
@@ -119,28 +129,34 @@ h1 {
 </div>
 
 <script>
-// 20吹き出しの割合座標
+// 実寸 1414×2000 の吹き出し座標（相棒が最適化）
 const areas = [
-  {id:"1L", x:0.22, y:0.085, w:0.22, h:0.07},
-  {id:"1R", x:0.78, y:0.085, w:0.22, h:0.07},
-  {id:"2L", x:0.22, y:0.165, w:0.22, h:0.07},
-  {id:"2R", x:0.78, y:0.165, w:0.22, h:0.07},
-  {id:"3L", x:0.22, y:0.245, w:0.22, h:0.07},
-  {id:"3R", x:0.78, y:0.245, w:0.22, h:0.07},
-  {id:"4L", x:0.22, y:0.325, w:0.22, h:0.07},
-  {id:"4R", x:0.78, y:0.325, w:0.22, h:0.07},
-  {id:"5L", x:0.22, y:0.405, w:0.22, h:0.07},
-  {id:"5R", x:0.78, y:0.405, w:0.22, h:0.07},
-  {id:"6L", x:0.22, y:0.485, w:0.22, h:0.07},
-  {id:"6R", x:0.78, y:0.485, w:0.22, h:0.07},
-  {id:"7L", x:0.22, y:0.565, w:0.22, h:0.07},
-  {id:"7R", x:0.78, y:0.565, w:0.22, h:0.07},
-  {id:"8L", x:0.22, y:0.645, w:0.22, h:0.07},
-  {id:"8R", x:0.78, y:0.645, w:0.22, h:0.07},
-  {id:"9L", x:0.22, y:0.725, w:0.22, h:0.07},
-  {id:"9R", x:0.78, y:0.725, w:0.22, h:0.07},
-  {id:"10L", x:0.22, y:0.805, w:0.22, h:0.07},
-  {id:"10R", x:0.78, y:0.805, w:0.22, h:0.07},
+  {id:"1L", x:160, y:140, w:420, h:120},
+  {id:"1R", x:830, y:140, w:420, h:120},
+
+  {id:"2L", x:160, y:350, w:420, h:120},
+  {id:"2R", x:830, y:350, w:420, h:120},
+
+  {id:"3L", x:160, y:560, w:420, h:120},
+  {id:"3R", x:830, y:560, w:420, h:120},
+
+  {id:"4L", x:160, y:770, w:420, h:120},
+  {id:"4R", x:830, y:770, w:420, h:120},
+
+  {id:"5L", x:160, y:980, w:420, h:120},
+  {id:"5R", x:830, y:980, w:420, h:120},
+
+  {id:"6L", x:160, y:1190, w:420, h:120},
+  {id:"6R", x:830, y:1190, w:420, h:120},
+
+  {id:"7L", x:160, y:1400, w:420, h:120},
+  {id:"7R", x:830, y:1400, w:420, h:120},
+
+  {id:"8L", x:160, y:1610, w:420, h:120},
+  {id:"8R", x:830, y:1610, w:420, h:120},
+
+  {id:"9L", x:160, y:1820, w:420, h:120},
+  {id:"9R", x:830, y:1820, w:420, h:120},
 ];
 
 let texts = {};
@@ -152,17 +168,16 @@ const baseImage = document.getElementById("baseImage");
 
 // タップ領域配置
 baseImage.onload = () => {
-  const displayW = baseImage.clientWidth;
-  const displayH = baseImage.clientHeight;
+  const scale = baseImage.clientWidth / 1414;
 
   areas.forEach(a => {
     const div = document.createElement("div");
     div.className = "tapArea";
 
-    div.style.left = (a.x * displayW) + "px";
-    div.style.top = (a.y * displayH) + "px";
-    div.style.width = (a.w * displayW) + "px";
-    div.style.height = (a.h * displayH) + "px";
+    div.style.left = (a.x * scale) + "px";
+    div.style.top = (a.y * scale) + "px";
+    div.style.width = (a.w * scale) + "px";
+    div.style.height = (a.h * scale) + "px";
 
     div.dataset.id = a.id;
 
@@ -174,14 +189,13 @@ baseImage.onload = () => {
 
     container.appendChild(div);
 
-    // プレビュー用
+    // プレビュー
     const p = document.createElement("div");
     p.className = "previewText";
-    p.style.left = (a.x * displayW) + "px";
-    p.style.top = (a.y * displayH) + "px";
-    p.style.width = (a.w * displayW) + "px";
-    p.style.height = (a.h * displayH) + "px";
-    p.style.lineHeight = (a.h * displayH) + "px";
+    p.style.left = (a.x * scale + 10) + "px";
+    p.style.top = (a.y * scale + 12) + "px";
+    p.style.width = (a.w * scale - 20) + "px";
+    p.style.height = (a.h * scale - 24) + "px";
 
     container.appendChild(p);
     previewDivs[a.id] = p;
@@ -196,25 +210,14 @@ document.getElementById("saveText").onclick = () => {
   const p = previewDivs[currentId];
   p.innerText = val;
 
-  // 自動フォント調整
-  let fontSize = 32;
-  const maxWidth = p.clientWidth - 4;
-
-  const temp = document.createElement("span");
-  temp.style.visibility = "hidden";
-  temp.style.whiteSpace = "nowrap";
-  temp.style.fontFamily = "M PLUS Rounded 1c";
-  document.body.appendChild(temp);
-
-  while (fontSize > 10) {
-    temp.style.fontSize = fontSize + "px";
-    temp.innerText = val;
-    if (temp.clientWidth <= maxWidth) break;
-    fontSize -= 1;
-  }
-
+  // 自動縮小
+  let fontSize = 28;
   p.style.fontSize = fontSize + "px";
-  document.body.removeChild(temp);
+
+  while (p.scrollHeight > p.clientHeight && fontSize > 12) {
+    fontSize -= 1;
+    p.style.fontSize = fontSize + "px";
+  }
 
   document.getElementById("modalBg").style.display = "none";
 };
@@ -226,31 +229,50 @@ document.getElementById("saveBtn").onclick = () => {
 
   img.onload = () => {
     const canvas = document.createElement("canvas");
-    canvas.width = img.width;
-    canvas.height = img.height;
+    canvas.width = 1414;
+    canvas.height = 2000;
     const ctx = canvas.getContext("2d");
 
     ctx.drawImage(img, 0, 0);
 
     areas.forEach(a => {
       const text = texts[a.id];
-      if (text) {
-        let fontSize = 32;
-        ctx.font = fontSize + "px 'M PLUS Rounded 1c'";
-        const maxWidth = img.width * a.w - 10;
+      if (!text) return;
 
-        while (ctx.measureText(text).width > maxWidth && fontSize > 10) {
-          fontSize -= 1;
-          ctx.font = fontSize + "px 'M PLUS Rounded 1c'";
+      const boxW = a.w - 20;
+      const boxH = a.h - 24;
+
+      let fontSize = 28;
+      ctx.font = fontSize + "px 'M PLUS Rounded 1c'";
+      ctx.fillStyle = "#333";
+
+      const lines = [];
+      let words = text.split("");
+
+      let line = "";
+      words.forEach(ch => {
+        const test = line + ch;
+        if (ctx.measureText(test).width > boxW) {
+          lines.push(line);
+          line = ch;
+        } else {
+          line = test;
         }
+      });
+      lines.push(line);
 
-        ctx.fillStyle = "#333";
-        ctx.textAlign = "center";
-        const x = img.width * a.x + (img.width * a.w) / 2;
-        const y = img.height * a.y + (img.height * a.h) / 2 + fontSize / 2 - 4;
-
-        ctx.fillText(text, x, y);
+      while (lines.length * (fontSize + 4) > boxH && fontSize > 12) {
+        fontSize -= 1;
+        ctx.font = fontSize + "px 'M PLUS Rounded 1c'";
       }
+
+      const totalH = lines.length * (fontSize + 4);
+      let y = a.y + (a.h - totalH) / 2 + fontSize;
+
+      lines.forEach(line => {
+        ctx.fillText(line, a.x + 14, y);
+        y += fontSize + 4;
+      });
     });
 
     const link = document.createElement("a");
